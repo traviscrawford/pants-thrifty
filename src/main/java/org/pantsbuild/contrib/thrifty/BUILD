@@ -1,6 +1,6 @@
 java_library(
     dependencies=[
-        'src/main/thrift:thrifty',
+        'src/main/thrift/org/pantsbuild/contrib/thrifty/client',
     ],
     sources=globs('*.java'),
 )
@@ -8,5 +8,5 @@ java_library(
 jvm_binary(
     name='bin',
     dependencies=[':thrifty'],
-    main='org.pantsbuild.contrib.thrifty.ThriftyDistance',
+    main='org.pantsbuild.contrib.thrifty.ThriftyExample',
 )

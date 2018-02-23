@@ -27,16 +27,13 @@ class ThriftyGen(NailgunTaskBase, SimpleCodegenTask):
       return JarDependency(org='com.microsoft.thrifty', name=name, rev='0.4.3')
 
     cls.register_jvm_tool(register,
-                          'javadeps',
-                          classpath=[
-                            thrifty_jar(name='thrifty-compiler')
-                          ],
-                          classpath_spec='//:thrifty-compiler',
-                          help='Runtime dependencies for the Microsoft Thrifty compiler')
-    cls.register_jvm_tool(register, 'thrifty-compiler', classpath=[thrifty_jar(name='thrifty-compiler')])
+                          'thrifty-runtime',
+                          classpath=[thrifty_jar(name='thrifty-runtime')])
+    cls.register_jvm_tool(register,
+                          'thrifty-compiler',
+                          classpath=[thrifty_jar(name='thrifty-compiler')])
 
   def __init__(self, *args, **kwargs):
-    """Generates Java files from .proto files using the Thrifty protobuf compiler."""
     super(ThriftyGen, self).__init__(*args, **kwargs)
 
   def synthetic_target_type(self, target):
@@ -46,13 +43,14 @@ class ThriftyGen(NailgunTaskBase, SimpleCodegenTask):
     return isinstance(target, ThriftyLibrary)
 
   def synthetic_target_extra_dependencies(self, target, target_workdir):
-    thrifty_runtime_deps_spec = self.get_options().javadeps
+    thrifty_runtime_deps_spec = self.get_options().thrifty_runtime
     return self.resolve_deps([thrifty_runtime_deps_spec])
 
   def format_args_for_target(self, target, target_workdir):
-    """Calculate the arguments to pass to the command line for a single target."""
     sources = OrderedSet(target.sources_relative_to_buildroot())
     args = ['--out={0}'.format(target_workdir)]
+    for include_path in self._compute_include_paths(target):
+      args.append('--path={0}'.format(include_path))
     args.extend(sources)
     return args
 
@@ -67,7 +65,7 @@ class ThriftyGen(NailgunTaskBase, SimpleCodegenTask):
       if result != 0:
         raise TaskError('Thrifty compiler exited non-zero ({0})'.format(result))
 
-  def _calculate_proto_paths(self, target):
+  def _compute_include_paths(self, target):
     """Computes the set of paths that thrifty uses to lookup imported protos.
 
     The protos under these paths are not compiled, but they are required to compile the protos that
