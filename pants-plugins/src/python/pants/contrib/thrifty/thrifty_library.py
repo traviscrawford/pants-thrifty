@@ -6,5 +6,4 @@ from pants.backend.jvm.targets.exportable_jvm_library import \
 
 
 class ThriftyLibrary(ExportableJvmLibrary):
-  def __init__(self, **kwargs):
-    super(ThriftyLibrary, self).__init__(**kwargs)
+  default_sources_globs = '*.thrift'
