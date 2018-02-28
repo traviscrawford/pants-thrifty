@@ -1,3 +1,1 @@
-thrifty_library(
-    sources=globs('*.thrift'),
-)
+thrifty_library()
